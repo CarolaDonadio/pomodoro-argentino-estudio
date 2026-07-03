@@ -4,6 +4,8 @@ Un temporizador Pomodoro minimalista y funcional enfocado en el estudio sin dist
 
 El proyecto integra una lista de tareas dinámica, un sintetizador de audio ambiental en tiempo real y un widget que consulta el estado meteorológico actual sin salir de la pestaña.
 
+![Texto alternativo](images/presentacion.png)
+
 ---
 
 ## ✨ Características Principales
