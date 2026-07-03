@@ -1,0 +1,57 @@
+body {
+    font-family: 'Inter', sans-serif;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    background-image: url('../images/wallpaper-pomodoro.png');
+    background-color: #ffbb61;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+/* Custom Glassmorphism Classes */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.08); /* Más transparente */
+    backdrop-filter: blur(12px); /* Menos desenfoque */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+.glass-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+.glass-btn:active {
+    transform: translateY(1px);
+}
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+/* Circular Progress Styling */
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}

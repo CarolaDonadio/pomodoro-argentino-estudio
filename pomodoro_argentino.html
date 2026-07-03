@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy: Medida de seguridad para restringir la carga de recursos a fuentes confiables -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; 
+        style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; 
+        font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+        connect-src 'self' https://wttr.in;
+        img-src 'self' data:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';">
+    <title>30:00 Pomodoro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="min-h-screen w-full relative flex items-center justify-center p-3 sm:p-4 md:p-8 select-none overflow-y-auto">
+    
+    <!-- Dark overlay to ensure contrast -->
+    <!--<div class="absolute inset-0 bg-black/45 z-0"></div>-->
+
+    <!-- Main Workspace Container -->
+    <div class="relative w-full h-full max-w-7xl flex flex-col justify-between z-10 gap-4">
+        
+        <!-- Header bar -->
+        <header class="w-full flex justify-between items-center py-3 px-4 rounded-2xl glass-panel text-white gap-2">
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="font-bold text-sm tracking-wide md:text-base">POMODORO</h1>
+                    <p class="text-[10px] opacity-75 hidden md:block">Estudiá de manera organizada y tranquila con sonido de fondo</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="toggleZenBtn" class="glass-btn px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-eye-slash"></i> <span class="hidden sm:inline">Ocultar</span>
+                </button>
+                <button id="audioInitBtn" class="glass-btn px-2.5 py-1.5 rounded-lg text-xs bg-amber-600/30 border-amber-500/40 hover:bg-amber-600/50 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-volume-high" id="audioBtnIcon"></i> <span id="audioBtnText">Activar Sonidos</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Area -->
+        <div class="w-full flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Left Side Panel: Tasks -->
+            <div id="leftPanel" class="col-span-1 md:col-span-4 lg:col-span-3 flex flex-col gap-4 order-2 lg:order-1 transition-all duration-500">
+                <div class="h-[250px] md:h-auto md:flex-1 glass-panel rounded-3xl p-4 flex flex-col overflow-hidden text-white">
+                    <h2 class="font-semibold mb-3 text-sm tracking-wide border-b border-white/10 pb-2 flex justify-between items-center">
+                        <span><i class="fa-solid fa-list-check mr-2 opacity-80"></i>TAREAS</span>
+                        <span id="taskCount" class="bg-white/15 px-2 py-0.5 rounded-full text-[10px]">0/0</span>
+                    </h2>
+                    <div class="flex gap-2 mb-3">
+                        <input id="newTaskInput" type="text" placeholder="Nueva tarea..." class="flex-1 glass-input rounded-xl px-3 py-2 text-xs">
+                        <button id="addTaskBtn" class="glass-btn p-2 rounded-xl aspect-square"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="taskList" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+                        <!-- Tasks go here dynamically -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Center Panel: Pomodoro Card -->
+            <div id="centerPanel" class="col-span-1 md:col-span-4 lg:col-span-6 order-1 lg:order-2 flex flex-col justify-center items-center">
+                <div class="glass-panel rounded-[2.5rem] p-5 sm:p-6 md:p-8 w-full max-w-md flex flex-col items-center justify-between min-h-[400px] md:aspect-square relative overflow-hidden transition-all duration-500 gap-4">
+                    
+                    <!-- Mode Selector -->
+                    <div class="flex justify-between bg-white/5 p-1 rounded-2xl w-full border border-white/5 z-10 text-[11px] sm:text-xs">
+                        <button id="modeStudy" class="flex-1 py-2 rounded-xl text-white font-medium transition-all bg-white/10 shadow-sm">Estudio</button>
+                        <button id="modeShort" class="flex-1 py-2 rounded-xl text-white/60 font-medium transition-all hover:text-white">Recreo</button>
+                        <button id="modeLong" class="flex-1 py-2 rounded-xl text-white/60 font-medium transition-all hover:text-white">R. Largo</button>
+                    </div>
+
+                    <!-- Circular Progress & Timer -->
+                    <div class="relative w-40 h-40 sm:w-48 sm:h-48 md:w-60 md:h-60 flex items-center justify-center my-1">
+                        <!-- SVG Ring -->
+                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
+                            <!-- Background Circle -->
+                            <circle class="text-white/5" stroke-width="6" stroke="currentColor" fill="transparent" r="88" cx="100" cy="100"/>
+                            <!-- Active Progress Ring -->
+                            <circle class="progress-ring__circle text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] transition-all" stroke-width="6" stroke-linecap="round" stroke="currentColor" fill="transparent" r="88" cx="100" cy="100" id="progressRing"/>
+                        </svg>
+                        
+                        <!-- Internal Text -->
+                        <div class="text-center z-10">
+                            <span id="timerDisplay" class="text-3xl sm:text-4xl md:text-5xl font-light text-white tracking-wider block font-mono">30:00</span>
+                            <span id="statusLabel" class="text-[9px] sm:text-[10px] md:text-xs text-white/60 uppercase tracking-widest mt-1 block">ESTUDIANDO</span>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="flex items-center gap-4 sm:gap-6 z-10">
+                        <button id="resetTimerBtn" class="glass-btn w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-base sm:text-lg hover:text-red-400" title="Reiniciar">
+                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                        </button>
+                        <button id="playPauseBtn" class="w-14 h-14 sm:w-16 sm:h-16 bg-white text-slate-900 rounded-[1.5rem] flex items-center justify-center text-xl sm:text-2xl hover:bg-slate-100 hover:scale-105 active:scale-95 transition-all shadow-xl" title="Iniciar/Pausar">
+                            <i id="playIcon" class="fa-solid fa-play ml-1"></i>
+                        </button>
+                        <button id="skipTimerBtn" class="glass-btn w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-base sm:text-lg hover:text-amber-400" title="Saltar">
+                            <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                    </div>
+
+                    <!-- Custom Times Configuration Toggle -->
+                    <button id="configToggleBtn" class="text-[10px] text-white/50 hover:text-white transition-all">
+                        <i class="fa-solid fa-cog mr-1"></i> Configurar Tiempos
+                    </button>
+
+                    <!-- Hidden config panel overlay inside card -->
+                    <div id="configPanel" class="absolute inset-x-0 bottom-0 top-14 bg-slate-950/95 backdrop-blur-md rounded-b-[2.5rem] p-5 sm:p-6 text-white flex flex-col justify-between transform translate-y-full transition-transform duration-300 z-20">
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-xs sm:text-sm border-b border-white/10 pb-2">Configuración personalizada (minutos)</h3>
+                            <div class="grid grid-cols-3 gap-2 text-xs">
+                                <div>
+                                    <label class="block text-white/60 mb-1">Estudio</label>
+                                    <input type="number" id="cfgStudy" value="30" min="1" max="180" class="w-full glass-input rounded-xl p-2 text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-white/60 mb-1">Recreo</label>
+                                    <input type="number" id="cfgShort" value="5" min="1" max="60" class="w-full glass-input rounded-xl p-2 text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-white/60 mb-1">R. Largo</label>
+                                    <input type="number" id="cfgLong" value="15" min="1" max="120" class="w-full glass-input rounded-xl p-2 text-center">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button id="configCancelBtn" class="flex-1 glass-btn py-2.5 rounded-xl text-xs">Cancelar</button>
+                            <button id="configSaveBtn" class="flex-1 bg-amber-500 text-slate-900 font-semibold py-2.5 rounded-xl text-xs hover:bg-amber-400 transition-all">Guardar</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right Side Panel: Ambient Audio & Weather Card -->
+            <div id="rightPanel" class="col-span-1 md:col-span-4 lg:col-span-3 flex flex-col gap-4 order-3 transition-all duration-500">
+                <!-- Ambient Card -->
+                <div class="glass-panel rounded-3xl p-4 text-white">
+                    <h2 class="font-semibold mb-3 text-sm tracking-wide border-b border-white/10 pb-2">
+                        <i class="fa-solid fa-sliders mr-2 opacity-80"></i>AMBIENTE
+                    </h2>
+                    <div class="space-y-3 text-xs">
+                        <!-- Sound 1: Rain -->
+                        <div>
+                            <div class="flex justify-between mb-1 opacity-80">
+                                <span><i class="fa-solid fa-cloud-rain mr-2"></i>Lluvia</span>
+                                <span id="rainVolVal">0%</span>
+                            </div>
+                            <input type="range" id="rainSlider" min="0" max="100" value="0" class="w-full accent-white bg-white/10 h-1 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <!-- Sound 2: Kettle Steam -->
+                        <div>
+                            <div class="flex justify-between mb-1 opacity-80">
+                                <span><i class="fa-solid fa-fire-burner mr-2"></i>Pava Herviendo</span>
+                                <span id="kettleVolVal">0%</span>
+                            </div>
+                            <input type="range" id="kettleSlider" min="0" max="100" value="0" class="w-full accent-white bg-white/10 h-1 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <!-- Sound 3: Radio Hum -->
+                        <div>
+                            <div class="flex justify-between mb-1 opacity-80">
+                                <span><i class="fa-solid fa-radio mr-2"></i>Radio AM de fondo</span>
+                                <span id="radioVolVal">0%</span>
+                            </div>
+                            <input type="range" id="radioSlider" min="0" max="100" value="0" class="w-full accent-white bg-white/10 h-1 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Card -->
+                <div class="glass-panel rounded-3xl p-4 text-white flex flex-col justify-between min-h-[140px]">
+                    <h2 class="font-semibold mb-2 text-sm tracking-wide border-b border-white/10 pb-2 flex justify-between items-center">
+                        <span><i class="fa-solid fa-cloud-sun mr-2 opacity-80"></i>CLIMA</span>
+                        <span id="weatherLocation" class="text-[10px] opacity-60 tracking-wide font-normal truncate max-w-[150px]">Cargando...</span>
+                    </h2>
+                    <div id="weatherContent" class="flex items-center justify-around py-1 gap-2">
+                        <div class="text-center w-full py-2 animate-pulse text-xs opacity-50">
+                            <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Obteniendo datos...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Alert / Toast Notification popup -->
+    <div id="toastNotification" class="fixed top-4 sm:top-8 left-1/2 transform -translate-x-1/2 bg-amber-500 text-slate-900 px-4 sm:px-6 py-3 rounded-2xl shadow-2xl font-semibold text-xs tracking-wide flex items-center gap-2 z-50 transition-all duration-500 translate-y-[-150%] opacity-0 w-[90%] sm:w-auto text-center justify-center">
+        <span class="text-base">🔔</span> <span id="toastMessage">¡Buen mate! Siguiente ciclo iniciado.</span>
+    </div>
+<script src="js/app.js" defer></script>
+</body>
+</html>
